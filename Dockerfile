@@ -1,8 +1,10 @@
 FROM alpine:3.15 as builder
 
-ENV STRONGSWAN_RELEASE https://download.strongswan.org/old/5.x/strongswan-5.9.9.tar.bz2
+ENV STRONGSWAN_RELEASE=https://download.strongswan.org/old/5.x/strongswan-5.9.9.tar.bz2
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+ARG REPOSITORY_URL=mirrors.tuna.tsinghua.edu.cn
+
+RUN sed -i "s/dl-cdn.alpinelinux.org/${REPOSITORY_URL}/g" /etc/apk/repositories && \
     apk --update add build-base \
             curl \
             clang \
@@ -19,7 +21,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/re
             --sysconfdir=/etc \
             --libexecdir=/usr/lib \
             --with-ipsecdir=/usr/lib/strongswan \
-            --enable-aesni \
             --enable-cmd \
             --enable-eap-identity \
             --enable-eap-md5 \
@@ -34,7 +35,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/re
             --enable-eap-sim \
             --enable-eap-simaka-pseudonym \
             --enable-eap-simaka-reauth \
-            --enable-unity \
             --enable-xauth-eap \
             --enable-xauth-generic \
             --enable-mediation \
@@ -55,6 +55,8 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/re
 
 FROM alpine:3.15
 
+ARG REPOSITORY_URL=mirrors.tuna.tsinghua.edu.cn
+
 RUN --mount=type=bind,from=builder,source=/,target=/builder cp -r /builder/etc/strongswan.d/ \
         /builder/etc/strongswan.conf \
         /builder/etc/ipsec.d/ \
@@ -68,7 +70,7 @@ RUN --mount=type=bind,from=builder,source=/,target=/builder cp -r /builder/etc/s
         cp -r /builder/usr/share/strongswan /usr/share/ && \
         cp -r /builder/usr/lib/strongswan /builder/usr/lib/ipsec /usr/lib && \
         cp /builder/usr/bin/pki /usr/bin && \
-        sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+        sed -i "s/dl-cdn.alpinelinux.org/${REPOSITORY_URL}/g" /etc/apk/repositories && \
         apk --update add gmp-dev && \
         sed -i 's/# install_routes = yes/install_routes = no/' /etc/strongswan.d/charon.conf && \
         rm -rf /var/cache/apk/
