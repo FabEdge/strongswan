@@ -32,8 +32,8 @@ jobs:
         platforms: linux/amd64,linux/arm64,linux/arm/v7
         push: true
         tags: |
-          ${{ github.repository }}:${{ github.ref_name }}
-          ${{ github.repository }}:latest
+          fabedge/strongswan:${{ github.ref_name }}
+          fabedge/strongswan:latest
         build-args: |
           REPOSITORY_URL=dl-cdn.alpinelinux.org
         
